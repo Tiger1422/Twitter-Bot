@@ -65,5 +65,9 @@ def run():
             api.update_status(message)
 
 while True:
-    run()
+    try:
+        run()
+    except:
+        pass
     time.sleep(60 * 60)
+
