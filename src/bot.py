@@ -23,14 +23,12 @@ def get_tweets(api, users):
         for status in api.search(q=query, lang='ja', result_type='recent'):
             tweet_day = status.created_at + timedelta(hours=9)
             today = datetime.today()
-            a_hour_ago = today - timedelta(hours=1)
+            a_hour_ago = today - timedelta(minutes=15)
 
             if tweet_day > a_hour_ago:
-                tweets.append(status)
-        
+                tweets.append((status, name))
 
     return tweets
-
 
 def run():
     auth = tweepy.OAuthHandler(key.consumer_key, key.consumer_secret)
@@ -42,7 +40,9 @@ def run():
     tweets = get_tweets(api, followers)
 
     for tweet in tweets:
-        print(f"name: {tweet.user.screen_name}\n")
+        tweet, name = tweet
+
+        print(f"name: {name}\n")
         print(f"text: {tweet.text}\n")
 
         payload = {
@@ -61,13 +61,17 @@ def run():
         if response['hit']:
             _id = tweet._json['id']
             url = f"https://twitter.com/{tweet.user.screen_name}/status/{_id}"
-            message = f"@{tweet.user.screen_name}\n危険なメッセージを発見しました。\n{url}"
-            api.update_status(message)
+            message = f"@{name}\n危険なメッセージを発見しました。\n{url}"
+
+            try:
+                api.update_status(message)
+            except:
+                import traceback
+                traceback.print_exc()
 
 while True:
-    try:
-        run()
-    except:
-        pass
-    time.sleep(60 * 60)
+    print('run !\n')
+    run()
+    print('\nend !\n')
+    time.sleep(60 * 15)
 
